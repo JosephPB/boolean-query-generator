@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boolean Query Builder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Boolean Query Builder</p>
+        <h1>Visual Boolean Canvas</h1>
+        <p class="lead">Create topic groups, add keyword chips, and output Brandwatch or Meta Content Library syntax without writing manual logic.</p>
+      </div>
+      <div class="action-row">
+        <div class="add-topic-wrap">
+          <button id="addTopicBtn" type="button" aria-haspopup="menu" aria-expanded="false">Add topic</button>
+        <div id="addTopicMenu" class="add-menu" role="menu" aria-label="Add topic relation" aria-hidden="true">
+            <button type="button" data-relation="AND" role="menuitem">Include with previous topic (AND)</button>
+            <button type="button" data-relation="OR" role="menuitem">Alternative topic (OR)</button>
+            <button type="button" data-relation="NOT" role="menuitem">Exclude topic (NOT)</button>
+          </div>
+        </div>
+        <div class="generate-buttons">
+          <button id="brandwatchBtn" type="button">Generate Brandwatch Query</button>
+          <button id="mclBtn" type="button">Generate Meta Content Library Query</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="board-shell">
+      <div id="board" class="topic-board" role="list" aria-label="Topic cards" tabindex="0"></div>
+    </section>
+
+    <section id="outputSection" class="output-area hidden" aria-live="polite">
+      <h2>Generated output</h2>
+      <textarea id="outputTextarea" rows="4" readonly></textarea>
+      <div class="output-actions">
+        <button id="copyBtn" type="button" disabled>Copy query</button>
+        <span id="copyStatus" role="status" aria-live="polite"></span>
+      </div>
+      <p id="validationMsg" class="validation-message" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
