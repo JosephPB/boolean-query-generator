@@ -17,18 +17,20 @@
       <div class="action-row">
         <div class="add-topic-wrap">
           <button id="addTopicBtn" type="button" aria-haspopup="menu" aria-expanded="false">Add topic</button>
-        <div id="addTopicMenu" class="add-menu" role="menu" aria-label="Add topic relation" aria-hidden="true">
+          <div id="addTopicMenu" class="add-menu" role="menu" aria-label="Add topic relation" aria-hidden="true">
             <button type="button" data-relation="AND" role="menuitem">Include with previous topic (AND)</button>
             <button type="button" data-relation="OR" role="menuitem">Alternative topic (OR)</button>
             <button type="button" data-relation="NOT" role="menuitem">Exclude topic (NOT)</button>
           </div>
         </div>
-        <div class="generate-buttons">
-          <button id="brandwatchBtn" type="button">Generate Brandwatch Query</button>
-          <button id="mclBtn" type="button">Generate Meta Content Library Query</button>
-        </div>
       </div>
     </header>
+    <div class="board-actions">
+      <div class="generate-buttons">
+        <button id="brandwatchBtn" type="button">Generate Brandwatch Query</button>
+        <button id="mclBtn" type="button">Generate Meta Content Library Query</button>
+      </div>
+    </div>
 
     <section class="board-shell">
       <div id="board" class="topic-board" role="list" aria-label="Topic cards" tabindex="0"></div>

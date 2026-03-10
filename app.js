@@ -41,8 +41,46 @@ function renderBoard() {
     badge.textContent = card.relation === 'START' ? 'START' : card.relation;
     header.append(title, badge);
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'delete-topic';
+    deleteBtn.textContent = 'Delete topic';
+    deleteBtn.setAttribute('aria-label', `Delete topic ${index + 1}`);
+    deleteBtn.disabled = state.cards.length === 1;
+    deleteBtn.addEventListener('click', () => removeCard(card.id));
+
+    const topControls = document.createElement('div');
+    topControls.className = 'card-controls';
+    topControls.append(header, deleteBtn);
+
     const body = document.createElement('div');
     body.className = 'card-body';
+
+    if (index > 0) {
+      const relationWrap = document.createElement('div');
+      relationWrap.className = 'relation-select-wrap';
+
+      const relationLabel = document.createElement('label');
+      relationLabel.setAttribute('for', `relation-${card.id}`);
+      relationLabel.textContent = 'Linked with';
+
+      const relationSelect = document.createElement('select');
+      relationSelect.id = `relation-${card.id}`;
+      ['AND', 'OR', 'NOT'].forEach((value) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        relationSelect.append(option);
+      });
+      relationSelect.value = card.relation;
+      relationSelect.addEventListener('change', (event) => {
+        card.relation = event.target.value;
+        renderBoard();
+      });
+
+      relationWrap.append(relationLabel, relationSelect);
+      body.append(relationWrap);
+    }
 
     const chipList = document.createElement('div');
     chipList.className = 'chip-list';
@@ -81,8 +119,8 @@ function renderBoard() {
       }
     });
 
-    body.append(label, chipList, input);
-    cardEl.append(header, body);
+    body.append(chipList, label, input);
+    cardEl.append(topControls, body);
     boardElement.appendChild(cardEl);
 
     if (card.id === pendingFocusCardId) {
@@ -122,6 +160,7 @@ function commitToken(cardId, inputElement) {
 
   card.tokens.push(normalized);
   inputElement.value = '';
+  pendingFocusCardId = cardId;
   renderBoard();
 }
 
@@ -143,6 +182,19 @@ function addCard(relation) {
   renderBoard();
 }
 
+function removeCard(cardId) {
+  if (state.cards.length === 1) {
+    return;
+  }
+  state.cards = state.cards.filter((entry) => entry.id !== cardId);
+  if (!state.cards.length) {
+    state.cards.push({ id: generateId(), relation: 'START', tokens: [] });
+  }
+  state.cards[0].relation = 'START';
+  pendingFocusCardId = state.cards[0].id;
+  renderBoard();
+}
+
 function openAddMenu() {
   addTopicMenu.classList.add('open');
   addTopicBtn.setAttribute('aria-expanded', 'true');
@@ -161,20 +213,19 @@ function closeAddMenu() {
 }
 
 function buildBrandwatch(cards) {
+  const cardExpressions = cards.map((card) => ({
+    relation: card.relation,
+    expression: createBrandwatchCardExpression(card),
+  }));
+  const segments = buildSegments(cardExpressions);
   let expression = '';
-  cards.forEach((card, index) => {
-    const terms = card.tokens.map((token) => formatBrandwatchToken(token));
-    if (!terms.length) {
-      return;
-    }
-    const group = `(${terms.join(' OR ')})`;
+  segments.forEach((segment, index) => {
+    const segmentExpression = formatBrandwatchSegment(segment);
     if (index === 0) {
-      expression = group;
+      expression = segmentExpression;
       return;
     }
-
-    const connector = card.relation === 'OR' ? ' OR ' : card.relation === 'NOT' ? ' NOT ' : ' AND ';
-    expression = `${expression}${connector}${group}`;
+    expression = `${expression}${brandwatchConnector(segment.connector)}${segmentExpression}`;
   });
   return expression;
 }
@@ -185,30 +236,105 @@ function formatBrandwatchToken(token) {
 }
 
 function buildMcl(cards) {
+  const cardExpressions = cards.map((card) => ({
+    relation: card.relation,
+    expression: createMclCardExpression(card),
+  }));
+  const segments = buildSegments(cardExpressions);
   let expression = '';
-  cards.forEach((card, index) => {
-    const group = `(${card.tokens.join('|')})`;
+  segments.forEach((segment, index) => {
+    const segmentExpression = formatMclSegment(segment);
     if (index === 0) {
-      expression = group;
+      expression = segmentExpression;
       return;
     }
-
-    if (card.relation === 'OR') {
-      expression = `${expression}|${group}`;
-    } else if (card.relation === 'NOT') {
-      expression = `${expression}-${group}`;
-    } else {
-      expression = `${expression}&${group}`;
-    }
+    expression = `${expression}${mclConnector(segment.connector)}${segmentExpression}`;
   });
   return expression;
+}
+
+function createBrandwatchCardExpression(card) {
+  const terms = card.tokens.map((token) => formatBrandwatchToken(token));
+  return terms.length ? `(${terms.join(' OR ')})` : '';
+}
+
+function createMclCardExpression(card) {
+  const segments = card.tokens
+    .map((token) => expandMclToken(token))
+    .filter(Boolean);
+  return segments.length ? `(${segments.join('|')})` : '';
+}
+
+function expandMclToken(token) {
+  const words = token.split(/\s+/).filter(Boolean);
+  if (!words.length) {
+    return '';
+  }
+  if (words.length === 1) {
+    return words[0];
+  }
+  return `(${words.join('&')})`;
+}
+
+function buildSegments(cardExpressions) {
+  const segments = [];
+  let currentConnector = null;
+  let currentExpressions = [cardExpressions[0].expression];
+
+  for (let i = 1; i < cardExpressions.length; i += 1) {
+    const card = cardExpressions[i];
+    if (card.relation === 'AND') {
+      currentExpressions.push(card.expression);
+      continue;
+    }
+    segments.push({ expressions: currentExpressions, connector: currentConnector });
+    currentConnector = card.relation;
+    currentExpressions = [card.expression];
+  }
+
+  segments.push({ expressions: currentExpressions, connector: currentConnector });
+  return segments;
+}
+
+function formatBrandwatchSegment(segment) {
+  if (segment.expressions.length === 1) {
+    return segment.expressions[0];
+  }
+  return `(${segment.expressions.join(' AND ')})`;
+}
+
+function formatMclSegment(segment) {
+  if (segment.expressions.length === 1) {
+    return segment.expressions[0];
+  }
+  return `(${segment.expressions.join('&')})`;
+}
+
+function brandwatchConnector(relation) {
+  if (relation === 'OR') {
+    return ' OR ';
+  }
+  if (relation === 'NOT') {
+    return ' NOT ';
+  }
+  return ' AND ';
+}
+
+function mclConnector(relation) {
+  if (relation === 'OR') {
+    return '|';
+  }
+  if (relation === 'NOT') {
+    return '-';
+  }
+  return '&';
 }
 
 function validateMclTokens(cards) {
   const invalid = [];
   cards.forEach((card) => {
     card.tokens.forEach((token) => {
-      if (/\s/.test(token) || token.includes('*')) {
+      if (token.includes('*')) {
         invalid.push(token);
       }
     });
@@ -252,7 +378,7 @@ function handleMclGenerate() {
   if (invalidTokens.length) {
     const invalidList = invalidTokens.map((token) => `"${token}"`).join(', ');
     displayValidation(
-      `Meta Content Library only supports single-word keywords without wildcards. Invalid tokens: ${invalidList}.`
+      `Meta Content Library does not allow wildcard characters. Invalid tokens: ${invalidList}.`
     );
     return;
   }
