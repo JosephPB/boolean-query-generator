@@ -7,6 +7,7 @@
   --border: #d1d5db;
   --accent: #6366f1;
   --accent-strong: #312e81;
+  --accent-contrast: #ffffff;
   --shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
   --radius: 16px;
   --padding: 16px;
@@ -31,7 +32,9 @@ textarea {
 
 .app-shell {
   min-height: 100vh;
-  padding: 32px;
+  padding: 32px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -129,14 +132,24 @@ h1 {
   outline: none;
 }
 
-.generate-buttons {
+.board-region {
   display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.board-actions {
+.board-toolbar,
+.board-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+}
+
+.generate-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .generate-buttons button,
@@ -172,13 +185,18 @@ h1 {
   background: transparent;
 }
 
+.board-shell {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  padding: 16px;
+  border: 1px solid rgba(209, 213, 219, 0.6);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
 .topic-board {
   display: flex;
   gap: 16px;
-  padding: 16px;
   border-radius: 20px;
-  border: 1px solid rgba(209, 213, 219, 0.6);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
   overflow-x: auto;
   scroll-behavior: smooth;
   flex-wrap: nowrap;
@@ -318,6 +336,7 @@ h1 {
   padding: 10px 12px;
   background: var(--surface);
   color: var(--text);
+  margin-top: 14px;
 }
 
 .card-body input:focus-visible {
@@ -375,7 +394,11 @@ h1 {
 }
 
 @media (max-width: 900px) {
-  .topic-board {
+  .app-shell {
+    padding: 24px 16px;
+  }
+
+  .board-shell {
     padding: 12px;
   }
 
@@ -396,5 +419,11 @@ h1 {
 
   .generate-buttons button {
     width: 100%;
+  }
+
+  .board-toolbar,
+  .board-footer {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

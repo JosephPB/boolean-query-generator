@@ -262,7 +262,7 @@ function createMclCardExpression(card) {
   const segments = card.tokens
     .map((token) => expandMclToken(token))
     .filter(Boolean);
-  return segments.length ? `(${segments.join('|')})` : '';
+  return segments.length ? `(${segments.join(' | ')})` : '';
 }
 
 function expandMclToken(token) {
@@ -273,7 +273,7 @@ function expandMclToken(token) {
   if (words.length === 1) {
     return words[0];
   }
-  return `(${words.join('&')})`;
+  return `(${words.join(' & ')})`;
 }
 
 function buildSegments(cardExpressions) {
@@ -307,7 +307,7 @@ function formatMclSegment(segment) {
   if (segment.expressions.length === 1) {
     return segment.expressions[0];
   }
-  return `(${segment.expressions.join('&')})`;
+  return `(${segment.expressions.join(' & ')})`;
 }
 
 function brandwatchConnector(relation) {
@@ -322,12 +322,12 @@ function brandwatchConnector(relation) {
 
 function mclConnector(relation) {
   if (relation === 'OR') {
-    return '|';
+    return ' | ';
   }
   if (relation === 'NOT') {
-    return '-';
+    return ' - ';
   }
-  return '&';
+  return ' & ';
 }
 
 function validateMclTokens(cards) {

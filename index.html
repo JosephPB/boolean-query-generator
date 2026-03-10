@@ -14,7 +14,10 @@
         <h1>Visual Boolean Canvas</h1>
         <p class="lead">Create topic groups, add keyword chips, and output Brandwatch or Meta Content Library syntax without writing manual logic.</p>
       </div>
-      <div class="action-row">
+    </header>
+
+    <section class="board-region">
+      <div class="board-toolbar">
         <div class="add-topic-wrap">
           <button id="addTopicBtn" type="button" aria-haspopup="menu" aria-expanded="false">Add topic</button>
           <div id="addTopicMenu" class="add-menu" role="menu" aria-label="Add topic relation" aria-hidden="true">
@@ -24,16 +27,15 @@
           </div>
         </div>
       </div>
-    </header>
-    <div class="board-actions">
-      <div class="generate-buttons">
-        <button id="brandwatchBtn" type="button">Generate Brandwatch Query</button>
-        <button id="mclBtn" type="button">Generate Meta Content Library Query</button>
+      <div class="board-shell">
+        <div id="board" class="topic-board" role="list" aria-label="Topic cards" tabindex="0"></div>
       </div>
-    </div>
-
-    <section class="board-shell">
-      <div id="board" class="topic-board" role="list" aria-label="Topic cards" tabindex="0"></div>
+      <div class="board-footer">
+        <div class="generate-buttons">
+          <button id="brandwatchBtn" type="button">Generate Brandwatch Query</button>
+          <button id="mclBtn" type="button">Generate Meta Content Library Query</button>
+        </div>
+      </div>
     </section>
 
     <section id="outputSection" class="output-area hidden" aria-live="polite">
