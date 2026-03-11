@@ -2,7 +2,7 @@
 
 Static webpage for helping users generating Boolean queries for searching in the Brandwatch and Meta Content Library social media listening tools based on phrases and keywords.
 
-Inspired by the wonderful (BooleanBuilder)[https://github.com/rlfordon/BooleanBuilder] by Rebecca Fordon.
+Inspired by the wonderful [BooleanBuilder](https://github.com/rlfordon/BooleanBuilder) by Rebecca Fordon.
 
 ## Run
 
