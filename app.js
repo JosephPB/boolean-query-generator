@@ -1,14 +1,14 @@
-const boardElement = document.getElementById('board');
-const addTopicBtn = document.getElementById('addTopicBtn');
-const addTopicMenu = document.getElementById('addTopicMenu');
-const brandwatchBtn = document.getElementById('brandwatchBtn');
-const mclBtn = document.getElementById('mclBtn');
-const outputSection = document.getElementById('outputSection');
-const outputTextarea = document.getElementById('outputTextarea');
-const copyBtn = document.getElementById('copyBtn');
-const copyStatus = document.getElementById('copyStatus');
-const validationMsg = document.getElementById('validationMsg');
-const notWarning = document.getElementById('notWarning');
+const boardElement = document.getElementById("board");
+const addTopicBtn = document.getElementById("addTopicBtn");
+const addTopicMenu = document.getElementById("addTopicMenu");
+const brandwatchBtn = document.getElementById("brandwatchBtn");
+const mclBtn = document.getElementById("mclBtn");
+const outputSection = document.getElementById("outputSection");
+const outputTextarea = document.getElementById("outputTextarea");
+const copyBtn = document.getElementById("copyBtn");
+const copyStatus = document.getElementById("copyStatus");
+const validationMsg = document.getElementById("validationMsg");
+const notWarning = document.getElementById("notWarning");
 
 const state = { cards: [] };
 let cardIdSeed = 0;
@@ -20,7 +20,7 @@ let draggingCardElement = null;
 let dropPlaceholder = null;
 let dropTargetIndex = null;
 const notWarningText =
-  'Topics excluded using the NOT operator is applied over the whole query, please add any more keywords or phrases to exclude to the existing NOT topic';
+  "Topics excluded using the NOT operator is applied over the whole query, please add any more keywords or phrases to exclude to the existing NOT topic";
 
 function generateId() {
   cardIdSeed += 1;
@@ -28,13 +28,13 @@ function generateId() {
 }
 
 function normalizeToken(value) {
-  return value.replace(/\s+/g, ' ').trim();
+  return value.replace(/\s+/g, " ").trim();
 }
 
 function ensureDropPlaceholder() {
   if (!dropPlaceholder) {
-    dropPlaceholder = document.createElement('div');
-    dropPlaceholder.className = 'drop-placeholder';
+    dropPlaceholder = document.createElement("div");
+    dropPlaceholder.className = "drop-placeholder";
   }
 }
 
@@ -53,14 +53,18 @@ function updateDropPlaceholderPosition(event) {
   if (dropPlaceholder.contains && dropPlaceholder.contains(event.target)) {
     return;
   }
-  const cards = Array.from(boardElement.querySelectorAll('.topic-card'));
-  const targetCard = event.target.closest('.topic-card');
+  const cards = Array.from(boardElement.querySelectorAll(".topic-card")).filter(
+    (entry) => entry.dataset.cardId !== draggedCardId,
+  );
+  const targetCard = event.target.closest(".topic-card");
   const pointerX = event.clientX;
   if (targetCard && targetCard.dataset.cardId !== draggedCardId) {
-    const cardIndex = cards.findIndex((entry) => entry.dataset.cardId === targetCard.dataset.cardId);
+    const cardIndex = cards.findIndex(
+      (entry) => entry.dataset.cardId === targetCard.dataset.cardId,
+    );
     if (cardIndex !== -1) {
       const rect = targetCard.getBoundingClientRect();
-      const before = pointerX < rect.left + rect.width / 2;
+      const before = pointerX < rect.left + rect.width * 0.35;
       const referenceNode = before ? targetCard : targetCard.nextElementSibling;
       if (referenceNode === dropPlaceholder) {
         dropTargetIndex = before ? cardIndex : cardIndex + 1;
@@ -81,85 +85,91 @@ function updateDropPlaceholderPosition(event) {
 }
 
 function ensureNotCardAtEnd() {
-  const notIndex = state.cards.findIndex((card) => card.relation === 'NOT');
+  const notIndex = state.cards.findIndex((card) => card.relation === "NOT");
   if (notIndex > -1 && notIndex !== state.cards.length - 1) {
     const [notCard] = state.cards.splice(notIndex, 1);
     state.cards.push(notCard);
   }
   if (state.cards.length) {
-    state.cards[0].relation = 'START';
+    state.cards[0].relation = "START";
   }
 }
 
 function renderBoard() {
   ensureNotCardAtEnd();
   clearDropPlaceholder();
-  boardElement.innerHTML = '';
+  boardElement.innerHTML = "";
   state.cards.forEach((card, index) => {
-    const cardEl = document.createElement('section');
-    cardEl.className = 'topic-card';
+    const cardEl = document.createElement("section");
+    cardEl.className = "topic-card";
     cardEl.dataset.cardId = card.id;
-    cardEl.setAttribute('role', 'listitem');
+    cardEl.setAttribute("role", "listitem");
 
-    const header = document.createElement('div');
-    header.className = 'card-header';
-    const title = document.createElement('h3');
+    const header = document.createElement("div");
+    header.className = "card-header";
+    const title = document.createElement("h3");
     title.textContent = `Topic ${index + 1}`;
-    const badge = document.createElement('span');
-    badge.className = 'relation-badge';
+    const badge = document.createElement("span");
+    badge.className = "relation-badge";
     badge.dataset.relation = card.relation;
-    badge.textContent = card.relation === 'START' ? 'START' : card.relation;
+    badge.textContent = card.relation === "START" ? "START" : card.relation;
     header.append(title, badge);
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.type = 'button';
-    deleteBtn.className = 'delete-topic';
-    deleteBtn.textContent = 'Delete topic';
-    deleteBtn.setAttribute('aria-label', `Delete topic ${index + 1}`);
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "delete-topic";
+    deleteBtn.textContent = "Delete topic";
+    deleteBtn.setAttribute("aria-label", `Delete topic ${index + 1}`);
     deleteBtn.disabled = state.cards.length === 1;
-    deleteBtn.addEventListener('click', () => removeCard(card.id));
+    deleteBtn.addEventListener("click", () => removeCard(card.id));
 
-    const topControls = document.createElement('div');
-    topControls.className = 'card-controls';
-    topControls.setAttribute('draggable', 'true');
-    topControls.setAttribute('title', 'Drag to reorder topics');
-    topControls.addEventListener('dragstart', (event) => handleDragStart(event, cardEl));
-    topControls.addEventListener('dragend', handleDragEnd);
+    const topControls = document.createElement("div");
+    topControls.className = "card-controls";
+    topControls.setAttribute("title", "Drag to reorder topics");
+
+    cardEl.setAttribute("draggable", "true");
+    cardEl.addEventListener("dragstart", (event) =>
+      handleDragStart(event, cardEl),
+    );
+    cardEl.addEventListener("dragend", handleDragEnd);
 
     topControls.append(header, deleteBtn);
 
-    const body = document.createElement('div');
-    body.className = 'card-body';
+    const body = document.createElement("div");
+    body.className = "card-body";
 
     if (index > 0) {
-      const relationWrap = document.createElement('div');
-      relationWrap.className = 'relation-select-wrap';
+      const relationWrap = document.createElement("div");
+      relationWrap.className = "relation-select-wrap";
 
-      const relationLabel = document.createElement('label');
-      relationLabel.setAttribute('for', `relation-${card.id}`);
-      relationLabel.textContent = 'Linked with';
+      const relationLabel = document.createElement("label");
+      relationLabel.setAttribute("for", `relation-${card.id}`);
+      relationLabel.textContent = "Linked with";
 
-      const relationSelect = document.createElement('select');
+      const relationSelect = document.createElement("select");
       relationSelect.id = `relation-${card.id}`;
-      ['AND', 'OR', 'NOT'].forEach((value) => {
-        const option = document.createElement('option');
+      ["AND", "OR", "NOT"].forEach((value) => {
+        const option = document.createElement("option");
         option.value = value;
         option.textContent = value;
         relationSelect.append(option);
       });
       relationSelect.value = card.relation;
-      relationSelect.addEventListener('change', (event) => {
+      relationSelect.addEventListener("change", (event) => {
         hideNotWarning();
         const selected = event.target.value;
         const hasOtherNot =
-          selected === 'NOT' && state.cards.some((entry) => entry.relation === 'NOT' && entry.id !== card.id);
+          selected === "NOT" &&
+          state.cards.some(
+            (entry) => entry.relation === "NOT" && entry.id !== card.id,
+          );
         if (hasOtherNot) {
           showNotWarning(notWarningText);
           event.target.value = card.relation;
           return;
         }
         card.relation = selected;
-        if (selected === 'NOT') {
+        if (selected === "NOT") {
           ensureNotCardAtEnd();
         }
         renderBoard();
@@ -169,19 +179,22 @@ function renderBoard() {
       body.append(relationWrap);
     }
 
-    const chipList = document.createElement('div');
-    chipList.className = 'chip-list';
+    const chipList = document.createElement("div");
+    chipList.className = "chip-list";
     card.tokens.forEach((token) => {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
+      const chip = document.createElement("span");
+      chip.className = "chip";
       chip.textContent = token;
 
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'chip-remove';
-      removeBtn.innerHTML = '&times;';
-      removeBtn.setAttribute('aria-label', `Remove ${token} from ${title.textContent}`);
-      removeBtn.addEventListener('click', () => {
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "chip-remove";
+      removeBtn.innerHTML = "&times;";
+      removeBtn.setAttribute(
+        "aria-label",
+        `Remove ${token} from ${title.textContent}`,
+      );
+      removeBtn.addEventListener("click", () => {
         removeTokenFromCard(card.id, token);
       });
 
@@ -189,18 +202,18 @@ function renderBoard() {
       chipList.append(chip);
     });
 
-    const label = document.createElement('label');
-    label.className = 'sr-only';
-    label.setAttribute('for', `topic-input-${card.id}`);
+    const label = document.createElement("label");
+    label.className = "sr-only";
+    label.setAttribute("for", `topic-input-${card.id}`);
     label.textContent = `Add keyword for ${title.textContent}`;
 
-    const input = document.createElement('input');
-    input.type = 'text';
+    const input = document.createElement("input");
+    input.type = "text";
     input.id = `topic-input-${card.id}`;
-    input.placeholder = 'Add keyword or phrase';
-    input.autocomplete = 'off';
-    input.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ',') {
+    input.placeholder = "Add keyword or phrase";
+    input.autocomplete = "off";
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === ",") {
         event.preventDefault();
         commitToken(card.id, input);
       }
@@ -219,30 +232,36 @@ function renderBoard() {
   });
 
   if (pendingScrollCardId) {
-    const target = boardElement.querySelector(`[data-card-id="${pendingScrollCardId}"]`);
-    target?.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+    const target = boardElement.querySelector(
+      `[data-card-id="${pendingScrollCardId}"]`,
+    );
+    target?.scrollIntoView({ behavior: "smooth", inline: "start" });
     pendingScrollCardId = null;
   }
 }
 
 function handleDragStart(event, cardEl) {
-  if (event.target.closest('.delete-topic')) {
+  if (event.target.closest(".delete-topic")) {
     event.preventDefault();
     return;
   }
   clearDropPlaceholder();
   draggedCardId = cardEl.dataset.cardId;
   draggingCardElement = cardEl;
-  cardEl.classList.add('dragging');
-  event.dataTransfer?.setData('text/plain', draggedCardId);
+  cardEl.classList.add("dragging");
+  requestAnimationFrame(() => {
+    cardEl.classList.add("drag-hidden");
+  });
+  event.dataTransfer?.setData("text/plain", draggedCardId);
   event.dataTransfer?.setDragImage(cardEl, 0, 0);
-  event.dataTransfer?.setDropEffect('move');
+  event.dataTransfer?.setDropEffect("move");
 }
 
 function handleDragEnd() {
   clearDropPlaceholder();
   if (draggingCardElement) {
-    draggingCardElement.classList.remove('dragging');
+    draggingCardElement.classList.remove("dragging");
+    draggingCardElement.classList.remove("drag-hidden");
     draggingCardElement = null;
   }
   draggedCardId = null;
@@ -253,7 +272,7 @@ function handleBoardDragOver(event) {
     return;
   }
   event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
+  event.dataTransfer.dropEffect = "move";
   updateDropPlaceholderPosition(event);
 }
 
@@ -274,7 +293,10 @@ function insertCardAt(draggedId, targetIndex) {
     return;
   }
   const [movedCard] = state.cards.splice(draggedIndex, 1);
-  let insertIndex = typeof targetIndex === 'number' ? Math.max(0, targetIndex) : state.cards.length;
+  let insertIndex =
+    typeof targetIndex === "number"
+      ? Math.max(0, targetIndex)
+      : state.cards.length;
   if (insertIndex > state.cards.length) {
     insertIndex = state.cards.length;
   }
@@ -291,24 +313,26 @@ function commitToken(cardId, inputElement) {
   const rawValue = inputElement.value;
   const normalized = normalizeToken(rawValue);
   if (!normalized) {
-    inputElement.value = '';
+    inputElement.value = "";
     return;
   }
 
   const card = state.cards.find((entry) => entry.id === cardId);
   if (!card) {
-    inputElement.value = '';
+    inputElement.value = "";
     return;
   }
 
-  const duplicate = card.tokens.some((entry) => entry.toLowerCase() === normalized.toLowerCase());
+  const duplicate = card.tokens.some(
+    (entry) => entry.toLowerCase() === normalized.toLowerCase(),
+  );
   if (duplicate) {
-    inputElement.value = '';
+    inputElement.value = "";
     return;
   }
 
   card.tokens.push(normalized);
-  inputElement.value = '';
+  inputElement.value = "";
   pendingFocusCardId = cardId;
   renderBoard();
 }
@@ -338,7 +362,7 @@ function removeCard(cardId) {
   const card = state.cards.find((entry) => entry.id === cardId);
   state.cards = state.cards.filter((entry) => entry.id !== cardId);
   ensureNotCardAtEnd();
-  if (!state.cards.some((entry) => entry.relation === 'NOT')) {
+  if (!state.cards.some((entry) => entry.relation === "NOT")) {
     hideNotWarning();
   }
   pendingFocusCardId = state.cards[0].id;
@@ -346,30 +370,30 @@ function removeCard(cardId) {
 }
 
 function openAddMenu() {
-  addTopicMenu.classList.add('open');
-  addTopicBtn.setAttribute('aria-expanded', 'true');
-  addTopicMenu.setAttribute('aria-hidden', 'false');
+  addTopicMenu.classList.add("open");
+  addTopicBtn.setAttribute("aria-expanded", "true");
+  addTopicMenu.setAttribute("aria-hidden", "false");
   menuOpen = true;
   requestAnimationFrame(() => {
-    addTopicMenu.querySelector('button')?.focus();
+    addTopicMenu.querySelector("button")?.focus();
   });
 }
 
 function closeAddMenu() {
-  addTopicMenu.classList.remove('open');
-  addTopicBtn.setAttribute('aria-expanded', 'false');
-  addTopicMenu.setAttribute('aria-hidden', 'true');
+  addTopicMenu.classList.remove("open");
+  addTopicBtn.setAttribute("aria-expanded", "false");
+  addTopicMenu.setAttribute("aria-hidden", "true");
   menuOpen = false;
 }
 
 function showNotWarning(message) {
   notWarning.textContent = message;
-  notWarning.classList.remove('hidden');
+  notWarning.classList.remove("hidden");
 }
 
 function hideNotWarning() {
-  notWarning.textContent = '';
-  notWarning.classList.add('hidden');
+  notWarning.textContent = "";
+  notWarning.classList.add("hidden");
 }
 
 function prepareCardExpressions(cards, expressionBuilder) {
@@ -385,7 +409,7 @@ function prepareCardExpressions(cards, expressionBuilder) {
     expressions.push({ relation: card.relation, expression });
   });
   if (expressions.length) {
-    expressions[0].relation = 'START';
+    expressions[0].relation = "START";
   }
   return expressions;
 }
@@ -400,24 +424,30 @@ function buildSegments(cardExpressions) {
 
   for (let i = 1; i < cardExpressions.length; i += 1) {
     const card = cardExpressions[i];
-    if (card.relation === 'AND') {
+    if (card.relation === "AND") {
       currentExpressions.push(card.expression);
       continue;
     }
-    segments.push({ expressions: currentExpressions, connector: currentConnector });
+    segments.push({
+      expressions: currentExpressions,
+      connector: currentConnector,
+    });
     currentConnector = card.relation;
     currentExpressions = [card.expression];
   }
 
-  segments.push({ expressions: currentExpressions, connector: currentConnector });
+  segments.push({
+    expressions: currentExpressions,
+    connector: currentConnector,
+  });
   return segments;
 }
 
 function combineSegments(segments, formatter, connectorFn) {
   if (!segments.length) {
-    return '';
+    return "";
   }
-  let expression = '';
+  let expression = "";
   segments.forEach((segment, index) => {
     const segmentExpression = formatter(segment);
     if (!segmentExpression) {
@@ -439,32 +469,41 @@ function formatBrandwatchToken(token) {
 
 function createBrandwatchCardExpression(card) {
   const terms = card.tokens.map((token) => formatBrandwatchToken(token));
-  return terms.length ? `(${terms.join(' OR ')})` : '';
+  return terms.length ? `(${terms.join(" OR ")})` : "";
 }
 
 function createMclCardExpression(card) {
-  const segments = card.tokens.map((token) => expandMclToken(token)).filter(Boolean);
-  return segments.length ? `(${segments.join(' | ')})` : '';
+  const segments = card.tokens
+    .map((token) => expandMclToken(token))
+    .filter(Boolean);
+  return segments.length ? `(${segments.join(" | ")})` : "";
 }
 
 function expandMclToken(token) {
   const words = token.split(/\s+/).filter(Boolean);
   if (!words.length) {
-    return '';
+    return "";
   }
   if (words.length === 1) {
     return words[0];
   }
-  return `(${words.join(' & ')})`;
+  return `(${words.join(" & ")})`;
 }
 
 function buildBrandwatch(cards) {
-  const mainCards = cards.filter((card) => card.relation !== 'NOT');
-  const expressions = prepareCardExpressions(mainCards, createBrandwatchCardExpression);
+  const mainCards = cards.filter((card) => card.relation !== "NOT");
+  const expressions = prepareCardExpressions(
+    mainCards,
+    createBrandwatchCardExpression,
+  );
   const segments = buildSegments(expressions);
-  let expression = combineSegments(segments, formatBrandwatchSegment, brandwatchConnector);
-  const notCard = cards.find((card) => card.relation === 'NOT');
-  const notExpression = notCard ? createBrandwatchCardExpression(notCard) : '';
+  let expression = combineSegments(
+    segments,
+    formatBrandwatchSegment,
+    brandwatchConnector,
+  );
+  const notCard = cards.find((card) => card.relation === "NOT");
+  const notExpression = notCard ? createBrandwatchCardExpression(notCard) : "";
   if (!expression && notExpression) {
     return `NOT ${notExpression}`;
   }
@@ -475,12 +514,15 @@ function buildBrandwatch(cards) {
 }
 
 function buildMcl(cards) {
-  const mainCards = cards.filter((card) => card.relation !== 'NOT');
-  const expressions = prepareCardExpressions(mainCards, createMclCardExpression);
+  const mainCards = cards.filter((card) => card.relation !== "NOT");
+  const expressions = prepareCardExpressions(
+    mainCards,
+    createMclCardExpression,
+  );
   const segments = buildSegments(expressions);
   let expression = combineSegments(segments, formatMclSegment, mclConnector);
-  const notCard = cards.find((card) => card.relation === 'NOT');
-  const notExpression = notCard ? formatMclNotSegment(notCard) : '';
+  const notCard = cards.find((card) => card.relation === "NOT");
+  const notExpression = notCard ? formatMclNotSegment(notCard) : "";
   if (!expression && notExpression) {
     return notExpression;
   }
@@ -494,56 +536,66 @@ function formatBrandwatchSegment(segment) {
   if (segment.expressions.length === 1) {
     return segment.expressions[0];
   }
-  return `(${segment.expressions.join(' AND ')})`;
+  return `(${segment.expressions.join(" AND ")})`;
 }
 
 function formatMclSegment(segment) {
   if (segment.expressions.length === 1) {
     return segment.expressions[0];
   }
-  return `(${segment.expressions.join(' & ')})`;
+  return `(${segment.expressions.join(" & ")})`;
 }
 
 function formatMclNotSegment(card) {
   if (!card.tokens.length) {
-    return '';
+    return "";
   }
-  return card.tokens.map((token) => `-${token}`).join(' ');
+  return card.tokens.map((token) => `-${token}`).join(" ");
 }
 
 function brandwatchConnector(relation) {
-  if (relation === 'OR') {
-    return ' OR ';
+  if (relation === "OR") {
+    return " OR ";
   }
-  if (relation === 'NOT') {
-    return ' NOT ';
+  if (relation === "NOT") {
+    return " NOT ";
   }
-  return ' AND ';
+  return " AND ";
 }
 
 function mclConnector(relation) {
-  if (relation === 'OR') {
-    return ' | ';
+  if (relation === "OR") {
+    return " | ";
   }
-  if (relation === 'NOT') {
-    return ' - ';
+  if (relation === "NOT") {
+    return " - ";
   }
-  return ' & ';
+  return " & ";
 }
 
 function validateMclTokens(cards) {
   const invalid = [];
   cards.forEach((card) => {
     card.tokens.forEach((token) => {
-      if (token.includes('*')) {
-        const reason = 'Meta Content Library does not allow wildcard characters.';
-        if (!invalid.some((entry) => entry.token === token && entry.reason === reason)) {
+      if (token.includes("*")) {
+        const reason =
+          "Meta Content Library does not allow wildcard characters.";
+        if (
+          !invalid.some(
+            (entry) => entry.token === token && entry.reason === reason,
+          )
+        ) {
           invalid.push({ token, reason });
         }
       }
-      if (card.relation === 'NOT' && /\s/.test(token)) {
-        const reason = 'Meta Content Library only supports single-word keywords in NOT topics.';
-        if (!invalid.some((entry) => entry.token === token && entry.reason === reason)) {
+      if (card.relation === "NOT" && /\s/.test(token)) {
+        const reason =
+          "Meta Content Library only supports single-word keywords in NOT topics.";
+        if (
+          !invalid.some(
+            (entry) => entry.token === token && entry.reason === reason,
+          )
+        ) {
           invalid.push({ token, reason });
         }
       }
@@ -553,46 +605,54 @@ function validateMclTokens(cards) {
 }
 
 function displayValidation(message) {
-  showOutput('', message);
+  showOutput("", message);
 }
 
 function showOutput(query, message) {
   if (!query && !message) {
-    outputSection.classList.add('hidden');
+    outputSection.classList.add("hidden");
     return;
   }
-  outputSection.classList.remove('hidden');
+  outputSection.classList.remove("hidden");
   outputTextarea.value = query;
   copyBtn.disabled = !query;
-  validationMsg.textContent = message || '';
-  copyStatus.textContent = '';
+  validationMsg.textContent = message || "";
+  copyStatus.textContent = "";
 }
 
 function handleBrandwatchGenerate() {
   const activeCards = state.cards.filter((card) => card.tokens.length > 0);
   if (!activeCards.length) {
-    displayValidation('Add at least one keyword token before generating a query.');
+    displayValidation(
+      "Add at least one keyword token before generating a query.",
+    );
     return;
   }
   const query = buildBrandwatch(activeCards);
-  showOutput(query, '');
+  showOutput(query, "");
 }
 
 function handleMclGenerate() {
   const activeCards = state.cards.filter((card) => card.tokens.length > 0);
   if (!activeCards.length) {
-    displayValidation('Add at least one keyword token before generating a query.');
+    displayValidation(
+      "Add at least one keyword token before generating a query.",
+    );
     return;
   }
   const invalidTokens = validateMclTokens(activeCards);
   if (invalidTokens.length) {
-    const invalidList = invalidTokens.map((entry) => `"${entry.token}"`).join(', ');
-    const reasonText = Array.from(new Set(invalidTokens.map((entry) => entry.reason))).join(' ');
+    const invalidList = invalidTokens
+      .map((entry) => `"${entry.token}"`)
+      .join(", ");
+    const reasonText = Array.from(
+      new Set(invalidTokens.map((entry) => entry.reason)),
+    ).join(" ");
     displayValidation(`${reasonText} Invalid tokens: ${invalidList}.`);
     return;
   }
   const query = buildMcl(activeCards);
-  showOutput(query, '');
+  showOutput(query, "");
 }
 
 function copyOutput() {
@@ -605,7 +665,7 @@ function copyOutput() {
     : new Promise((resolve, reject) => {
         try {
           outputTextarea.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           resolve();
         } catch (err) {
           reject(err);
@@ -614,20 +674,20 @@ function copyOutput() {
 
   doCopy
     .then(() => {
-      copyStatus.textContent = 'Copied';
+      copyStatus.textContent = "Copied";
       setTimeout(() => {
-        copyStatus.textContent = '';
+        copyStatus.textContent = "";
       }, 2500);
     })
     .catch(() => {
-      copyStatus.textContent = 'Unable to copy';
+      copyStatus.textContent = "Unable to copy";
       setTimeout(() => {
-        copyStatus.textContent = '';
+        copyStatus.textContent = "";
       }, 2500);
     });
 }
 
-addTopicBtn.addEventListener('click', (event) => {
+addTopicBtn.addEventListener("click", (event) => {
   event.stopPropagation();
   if (menuOpen) {
     closeAddMenu();
@@ -636,13 +696,16 @@ addTopicBtn.addEventListener('click', (event) => {
   openAddMenu();
 });
 
-addTopicMenu.addEventListener('click', (event) => {
-  const button = event.target.closest('button[data-relation]');
+addTopicMenu.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-relation]");
   if (!button) {
     return;
   }
   const relation = button.dataset.relation;
-  if (relation === 'NOT' && state.cards.some((entry) => entry.relation === 'NOT')) {
+  if (
+    relation === "NOT" &&
+    state.cards.some((entry) => entry.relation === "NOT")
+  ) {
     showNotWarning(notWarningText);
     closeAddMenu();
     return;
@@ -652,28 +715,32 @@ addTopicMenu.addEventListener('click', (event) => {
   closeAddMenu();
 });
 
-document.addEventListener('click', (event) => {
-  if (menuOpen && !addTopicMenu.contains(event.target) && event.target !== addTopicBtn) {
+document.addEventListener("click", (event) => {
+  if (
+    menuOpen &&
+    !addTopicMenu.contains(event.target) &&
+    event.target !== addTopicBtn
+  ) {
     closeAddMenu();
   }
 });
 
-document.addEventListener('keydown', (event) => {
-  if (menuOpen && event.key === 'Escape') {
+document.addEventListener("keydown", (event) => {
+  if (menuOpen && event.key === "Escape") {
     closeAddMenu();
     addTopicBtn.focus();
   }
 });
 
-boardElement.addEventListener('dragover', handleBoardDragOver);
-boardElement.addEventListener('drop', handleBoardDrop);
+boardElement.addEventListener("dragover", handleBoardDragOver);
+boardElement.addEventListener("drop", handleBoardDrop);
 
-brandwatchBtn.addEventListener('click', handleBrandwatchGenerate);
-mclBtn.addEventListener('click', handleMclGenerate);
-copyBtn.addEventListener('click', copyOutput);
+brandwatchBtn.addEventListener("click", handleBrandwatchGenerate);
+mclBtn.addEventListener("click", handleMclGenerate);
+copyBtn.addEventListener("click", copyOutput);
 
 function initialize() {
-  state.cards.push({ id: generateId(), relation: 'START', tokens: [] });
+  state.cards.push({ id: generateId(), relation: "START", tokens: [] });
   renderBoard();
 }
 

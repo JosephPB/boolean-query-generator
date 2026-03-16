@@ -259,6 +259,16 @@ h1 {
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
 }
 
+.topic-card.drag-hidden {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden;
+  opacity: 0;
+}
+
 .card-header {
   display: flex;
   align-items: center;
