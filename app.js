@@ -95,6 +95,21 @@ function ensureNotCardAtEnd() {
   }
 }
 
+function getCardHighlightClass(card, index) {
+  if (card.relation === "NOT") {
+    return "topic-card--relation-not";
+  }
+  const prevRelation = card.relation;
+  const nextRelation = state.cards[index + 1]?.relation;
+  if (prevRelation === "AND" || nextRelation === "AND") {
+    return "topic-card--relation-and";
+  }
+  if (prevRelation === "OR" || nextRelation === "OR") {
+    return "topic-card--relation-or";
+  }
+  return "";
+}
+
 function renderBoard() {
   ensureNotCardAtEnd();
   clearDropPlaceholder();
@@ -104,6 +119,10 @@ function renderBoard() {
     cardEl.className = "topic-card";
     cardEl.dataset.cardId = card.id;
     cardEl.setAttribute("role", "listitem");
+    const highlightClass = getCardHighlightClass(card, index);
+    if (highlightClass) {
+      cardEl.classList.add(highlightClass);
+    }
 
     const header = document.createElement("div");
     header.className = "card-header";
