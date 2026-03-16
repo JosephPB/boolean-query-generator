@@ -73,6 +73,11 @@ h1 {
   max-width: 420px;
 }
 
+.lead.lead--wide {
+  max-width: none;
+  width: 100%;
+}
+
 .action-row {
   display: flex;
   align-items: center;
